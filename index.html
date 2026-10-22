@@ -1,914 +1,628 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paddock a Dois</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        f1red: '#E10600',
-                        f1dark: '#15151E',
-                        f1card: '#1F1F2C',
-                        f1gray: '#2D2D3C',
-                        f1accent: '#38384D'
-                    },
-                    fontFamily: {
-                        titillium: ['"Titillium Web"', 'sans-serif']
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paddock a Dois - Apostas F1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            f1red: '#e10600',
+            f1dark: '#15151e',
+            f1card: '#1f1f27',
+            f1border: '#38383f'
+          }
         }
-    </script>
-    <style>
-        body {
-            font-family: 'Titillium Web', sans-serif;
-            background-color: #15151E;
-            color: #FFFFFF;
-            background-image: radial-gradient(circle at 50% 0%, #2a1015 0%, #15151E 70%);
-            min-height: 100vh;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #15151E;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #E10600;
-            border-radius: 4px;
-        }
-
-        .racing-border {
-            border-left: 4px solid #E10600;
-        }
-
-        .glass-card {
-            background: rgba(31, 31, 44, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
 </head>
-<body class="pb-12 text-slate-100">
+<body class="bg-f1dark text-slate-100 min-h-screen font-sans pb-12">
 
-    <!-- Header / Navbar -->
-    <header class="border-b border-red-900/40 bg-f1dark/90 sticky top-0 z-50 backdrop-blur-md shadow-2xl">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-f1red text-white p-2 rounded-lg font-black text-xl italic tracking-wider flex items-center justify-center w-10 h-10 shadow-lg shadow-red-600/30">
-                    F1
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight uppercase flex items-center gap-2">
-                      Paddock a Dois 🏁
-                    </h1>
-                    <p class="text-xs text-slate-400">Campeonato de Apostas de RS</p>
-                </div>
-            </div>
-
-            <!-- Global GP Selector -->
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <label for="gpSelect" class="text-sm font-semibold whitespace-nowrap text-slate-300">
-                    <i class="fa-solid fa-trophy text-amber-500 mr-1"></i> GP:
-                </label>
-                <select id="gpSelect" onchange="onGpChange()" class="w-full sm:w-64 bg-f1gray border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-f1red cursor-pointer font-semibold">
-                    <!-- Dynamic GP Options populated via JS -->
-                </select>
-            </div>
+  <!-- Header -->
+  <header class="bg-black/60 border-b border-f1border sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-f1red text-white font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">F1</div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase flex items-center gap-2">
+            Paddock a Dois 🏁
+          </h1>
+          <p class="text-xs text-slate-400" id="subHeaderNames">Campeonato de Apostas</p>
         </div>
-    </header>
+      </div>
 
-    <main class="max-w-6xl mx-auto px-4 mt-6">
+      <div class="flex items-center gap-2">
+        <label for="gpSelect" class="text-xs font-semibold text-slate-400">GP:</label>
+        <select id="gpSelect" onchange="changeGP()" class="bg-f1card border border-f1border text-white text-sm rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-f1red outline-none">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+    </div>
+  </header>
 
-        <!-- Navigation Tabs -->
-        <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-2">
-            <button id="tab-bets" onclick="switchTab('bets')" class="px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1red text-white flex items-center gap-2 shadow-lg">
-                <i class="fa-solid fa-pen-to-square"></i>
-                Fazer Apostas
-            </button>
-            <button id="tab-results" onclick="switchTab('results')" class="px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1gray text-slate-400 hover:text-white flex items-center gap-2">
-                <i class="fa-solid fa-square-check"></i>
-                Resultado Oficial
-            </button>
-            <button id="tab-leaderboard" onclick="switchTab('leaderboard')" class="px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1gray text-slate-400 hover:text-white flex items-center gap-2">
-                <i class="fa-solid fa-ranking-star"></i>
-                Classificação Geral
-            </button>
+  <main class="max-w-5xl mx-auto px-4 mt-6">
+
+    <!-- Mode Selector & Controls -->
+    <div class="bg-f1card border border-f1border rounded-xl p-4 mb-6 shadow-lg">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- View Tabs -->
+        <div class="flex bg-f1dark/80 p-1 rounded-lg border border-f1border w-full md:w-auto">
+          <button id="tabBets" onclick="switchTab('bets')" class="flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all bg-f1red text-white">
+            <i class="fa-solid fa-pen-to-square mr-1.5"></i> Fazer Apostas
+          </button>
+          <button id="tabResults" onclick="switchTab('results')" class="flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all text-slate-400 hover:text-white">
+            <i class="fa-solid fa-square-check mr-1.5"></i> Resultado Oficial
+          </button>
+          <button id="tabStandings" onclick="switchTab('standings')" class="flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all text-slate-400 hover:text-white">
+            <i class="fa-solid fa-trophy mr-1.5"></i> Classificação
+          </button>
         </div>
 
-        <!-- Notification Banner -->
-        <div id="toast" class="hidden mb-6 p-4 rounded-xl bg-emerald-900/80 border border-emerald-500/50 text-emerald-200 flex items-center justify-between shadow-xl">
-            <span id="toastMsg" class="font-medium"></span>
-            <button onclick="hideToast()" class="text-emerald-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        <!-- User Role Switcher -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+          <span class="text-xs text-slate-400 font-medium">Perfil Atual:</span>
+          <button id="btnRoleAdmin" onclick="setRole('admin')" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-f1red bg-f1red/20 text-f1red">
+            👑 Admin
+          </button>
+          <button id="btnRoleP2" onclick="setRole('p2')" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-f1border bg-f1dark text-slate-400">
+            🏎️ <span id="labelP2">Jogador 2</span>
+          </button>
         </div>
 
-        <!-- ================= SECTION 1: BETS ================= -->
-        <section id="section-bets" class="space-y-6">
-            
-            <!-- Player Toggle -->
-            <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border-l-4 border-l-f1red">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-user-gear text-2xl text-f1red"></i>
-                    <div>
-                        <h2 class="text-lg font-bold">Quem está a apostar agora?</h2>
-                        <p class="text-xs text-slate-400">Seleciona o jogador para preencher ou visualizar os seus palpites.</p>
-                    </div>
-                </div>
-
-                <div class="flex bg-f1gray p-1 rounded-xl w-full md:w-auto">
-                    <button id="player1Btn" onclick="selectPlayer(1)" class="flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all bg-f1red text-white shadow-md">
-                        <i class="fa-solid fa-user mr-1"></i> <span id="p1NameDisplay">Jogador 1</span>
-                    </button>
-                    <button id="player2Btn" onclick="selectPlayer(2)" class="flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-user mr-1"></i> <span id="p2NameDisplay">Jogador 2</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Settings Modal Trigger (Name Customization) -->
-            <div class="flex justify-end">
-                <button onclick="toggleNameModal()" class="text-xs text-slate-400 hover:text-white underline flex items-center gap-1">
-                    <i class="fa-solid fa-pen-nib"></i> Alterar nomes dos jogadores
-                </button>
-            </div>
-
-            <!-- Position Bets (P1 to P20) -->
-            <div class="glass-card rounded-2xl p-6 shadow-2xl">
-                <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-800">
-                    <h3 class="text-xl font-bold uppercase tracking-wider text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-list-ol text-f1red"></i>
-                        Classificação Prevista (P1 a P20)
-                    </h3>
-                    <button onclick="resetCurrentForm()" class="text-xs text-slate-400 hover:text-red-400 flex items-center gap-1 transition">
-                        <i class="fa-solid fa-rotate-left"></i> Limpar Escolhas
-                    </button>
-                </div>
-
-                <div id="positionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- 20 Position Selects generated by JS -->
-                </div>
-            </div>
-
-            <!-- Extra Bets -->
-            <div class="glass-card rounded-2xl p-6 shadow-2xl">
-                <h3 class="text-xl font-bold uppercase tracking-wider text-slate-100 mb-6 pb-3 border-b border-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt text-amber-500"></i>
-                    Apostas Extra
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Yellow Flag -->
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 flex items-center gap-2 text-amber-400">
-                            <i class="fa-solid fa-flag"></i> Bandeira Amarela?
-                        </label>
-                        <select id="extraYellow" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-
-                    <!-- Red Flag -->
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 flex items-center gap-2 text-red-500">
-                            <i class="fa-solid fa-flag"></i> Bandeira Vermelha?
-                        </label>
-                        <select id="extraRed" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-
-                    <!-- DNF Count -->
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 flex items-center gap-2 text-slate-300">
-                            <i class="fa-solid fa-car-burst text-orange-500"></i> Quantidade de DNFs:
-                        </label>
-                        <select id="extraDnf" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-f1red">
-                            <!-- Populated 0-20 -->
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Save Button -->
-            <div class="flex justify-end pt-2">
-                <button onclick="saveCurrentBet()" class="w-full sm:w-auto px-8 py-4 bg-f1red hover:bg-red-700 text-white font-black text-lg rounded-xl shadow-lg shadow-red-600/30 uppercase tracking-wider transition-all transform active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Guardar Aposta
-                </button>
-            </div>
-        </section>
-
-        <!-- ================= SECTION 2: OFFICIAL RESULTS ================= -->
-        <section id="section-results" class="hidden space-y-6">
-            <div class="glass-card rounded-2xl p-6 shadow-2xl border-l-4 border-l-amber-500">
-                <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-800">
-                    <div>
-                        <h2 class="text-xl font-bold uppercase tracking-wider text-slate-100 flex items-center gap-2">
-                            <i class="fa-solid fa-trophy text-amber-500"></i>
-                            Registar Resultado Oficial do GP
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Insere a classificação final oficial da corrida para calcular a pontuação de ambos.</p>
-                    </div>
-                </div>
-
-                <!-- Position Selects for Official Result -->
-                <div id="officialPositionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <!-- 20 Positions Generated by JS -->
-                </div>
-
-                <!-- Extra Official Results -->
-                <h3 class="text-lg font-bold uppercase tracking-wider text-slate-200 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-check text-emerald-400"></i> Eventos Oficiais
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 text-amber-400">Houve Bandeira Amarela?</label>
-                        <select id="officialYellow" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 text-red-500">Houve Bandeira Vermelha?</label>
-                        <select id="officialRed" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-
-                    <div class="bg-f1dark/80 p-4 rounded-xl border border-slate-800">
-                        <label class="block text-sm font-semibold mb-2 text-slate-300">Total de DNFs Registados:</label>
-                        <select id="officialDnf" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-f1red">
-                            <!-- 0-20 options -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <button onclick="calculateAndSaveResults()" class="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg rounded-xl shadow-lg shadow-emerald-600/30 uppercase tracking-wider transition-all transform active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-calculator"></i>
-                        Guardar Resultado e Calcular Pontos
-                    </button>
-                </div>
-            </div>
-
-            <!-- GP Points Breakdown -->
-            <div id="gpScoreBreakdown" class="hidden glass-card rounded-2xl p-6 shadow-2xl">
-                <h3 class="text-xl font-bold uppercase tracking-wider text-slate-100 mb-6 pb-3 border-b border-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-simple text-blue-400"></i>
-                    Resumo do GP Atual
-                </h3>
-                <div id="gpScoreDetails" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= SECTION 3: LEADERBOARD ================= -->
-        <section id="section-leaderboard" class="hidden space-y-6">
-            
-            <!-- Global Standings Card -->
-            <div class="glass-card rounded-2xl p-6 shadow-2xl">
-                <h2 class="text-2xl font-black uppercase tracking-wider text-slate-100 mb-6 pb-3 border-b border-slate-800 text-center flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-trophy text-amber-400 text-3xl"></i>
-                    Tabela do Campeonato
-                </h2>
-
-                <div id="leaderboardCards" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Player Standings Cards generated by JS -->
-                </div>
-            </div>
-
-            <!-- History Table -->
-            <div class="glass-card rounded-2xl p-6 shadow-2xl overflow-hidden">
-                <h3 class="text-lg font-bold uppercase tracking-wider text-slate-200 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left text-f1red"></i> Histórico por Corrida
-                </h3>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-f1gray text-slate-300 text-xs uppercase tracking-wider">
-                                <th class="p-3 rounded-l-lg">Grande Prémio</th>
-                                <th class="p-3 text-center" id="thP1Name">Jogador 1</th>
-                                <th class="p-3 text-center" id="thP2Name">Jogador 2</th>
-                                <th class="p-3 text-center rounded-r-lg">Vencedor do GP</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody" class="divide-y divide-slate-800 text-sm">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Player Names Customization Modal -->
-    <div id="nameModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="glass-card bg-f1card rounded-2xl p-6 w-full max-w-md border border-slate-700 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-pen text-f1red"></i>
-                Configurar Jogadores
-            </h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Nome do Jogador 1:</label>
-                    <input type="text" id="inputP1Name" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-f1red">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Nome do Jogador 2:</label>
-                    <input type="text" id="inputP2Name" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-f1red">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="toggleNameModal()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-semibold">Cancelar</button>
-                <button onclick="savePlayerNames()" class="px-4 py-2 rounded-lg bg-f1red hover:bg-red-700 text-xs font-bold">Guardar Nomes</button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Application Logic -->
-    <script>
-        // 1. Data Constants
-        const DRIVERS = [
-            { id: "VER", name: "Max Verstappen", team: "Red Bull Racing" },
-            { id: "LAW", name: "Liam Lawson", team: "Red Bull Racing" },
-            { id: "LEC", name: "Charles Leclerc", team: "Ferrari" },
-            { id: "HAM", name: "Lewis Hamilton", team: "Ferrari" },
-            { id: "NOR", name: "Lando Norris", team: "McLaren" },
-            { id: "PIA", name: "Oscar Piastri", team: "McLaren" },
-            { id: "RUS", name: "George Russell", team: "Mercedes" },
-            { id: "ANT", name: "Kimi Antonelli", team: "Mercedes" },
-            { id: "ALO", name: "Fernando Alonso", team: "Aston Martin" },
-            { id: "STR", name: "Lance Stroll", team: "Aston Martin" },
-            { id: "GAS", name: "Pierre Gasly", team: "Alpine" },
-            { id: "DOO", name: "Jack Doohan", team: "Alpine" },
-            { id: "OCO", name: "Esteban Ocon", team: "Haas" },
-            { id: "BEA", name: "Oliver Bearman", team: "Haas" },
-            { id: "ALB", name: "Alexander Albon", team: "Williams" },
-            { id: "SAI", name: "Carlos Sainz", team: "Williams" },
-            { id: "HUL", name: "Nico Hülkenberg", nameTeam: "Sauber", team: "Sauber" },
-            { id: "BOR", name: "Gabriel Bortoleto", team: "Sauber" },
-            { id: "TSU", name: "Yuki Tsunoda", team: "RB" },
-            { id: "HAD", name: "Isack Hadjar", team: "RB" }
-        ];
+    <!-- TAB 1: BETS -->
+    <section id="secBets" class="space-block">
+      <!-- Player Switcher (Only visible to Admin) -->
+      <div id="playerToggleBox" class="bg-f1card border border-f1border rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div class="text-sm font-medium text-slate-300">
+          <span class="text-f1red font-bold">Apostando como:</span> 
+          <span id="currentBettingUserDisplay" class="font-bold"></span>
+        </div>
+        <div class="flex bg-f1dark p-1 rounded-lg border border-f1border">
+          <button id="btnBetP1" onclick="selectBetPlayer('p1')" class="px-4 py-1.5 text-xs font-bold rounded-md bg-f1red text-white">
+            <span id="btnP1Name">Jogador 1</span>
+          </button>
+          <button id="btnBetP2" onclick="selectBetPlayer('p2')" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-400">
+            <span id="btnP2Name">Jogador 2</span>
+          </button>
+        </div>
+      </div>
 
-        const GRAND_PRIX_CALENDAR = [
-            "GP do Barém (Sakhir)",
-            "GP da Arábia Saudita (Jidá)",
-            "GP da Austrália (Melbourne)",
-            "GP do Japão (Suzuka)",
-            "GP da China (Xangai)",
-            "GP de Miami (Miami)",
-            "GP da Emília-Romanha (Imola)",
-            "GP de Mónaco (Monte Carlo)",
-            "GP do Canadá (Montreal)",
-            "GP de Espanha (Barcelona)",
-            "GP da Áustria (Spielberg)",
-            "GP do Reino Unido (Silverstone)",
-            "GP da Hungria (Budapeste)",
-            "GP da Bélgica (Spa-Francorchamps)",
-            "GP dos Países Baixos (Zandvoort)",
-            "GP de Itália (Monza)",
-            "GP do Azerbaijão (Baku)",
-            "GP de Singapura (Marina Bay)",
-            "GP de Austin (Estados Unidos)",
-            "GP do México (Cidade do México)",
-            "GP de São Paulo (Interlagos)",
-            "GP de Las Vegas (Las Vegas)",
-            "GP do Catar (Lusail)",
-            "GP de Abu Dhabi (Yas Marina)"
-        ];
+      <!-- Player 2 Restricted Banner -->
+      <div id="p2NoticeBox" class="hidden bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-6 text-sm text-slate-300 flex items-center gap-3">
+        <i class="fa-solid fa-lock text-yellow-500 text-lg"></i>
+        <span>Estás a preencher os palpites para <strong id="p2NoticeName" class="text-white">Jogador 2</strong>. As tuas apostas são privadas!</span>
+      </div>
 
-        // 2. State Management
-        let appData = {
-            players: { p1: "Jogador 1", p2: "Jogador 2" },
-            bets: {},     // Key: "gpIndex_p1" or "gpIndex_p2" -> { positions: [...], yellow: "", red: "", dnf: "" }
-            results: {}   // Key: "gpIndex" -> { positions: [...], yellow: "", red: "", dnf: "" }
-        };
+      <form id="betForm" onsubmit="saveBet(event)" class="space-y-6">
+        <!-- Top 10 Drivers Selection -->
+        <div class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg">
+          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-flag-checkered text-f1red"></i> Palpite do Top 10
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="top10Container">
+            <!-- Dropdowns 1-10 generated by JS -->
+          </div>
+        </div>
 
-        let currentActivePlayer = 1; // 1 or 2
-        let selectedGpIndex = 0;
+        <!-- Extra Questions -->
+        <div class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg">
+          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-circle-question text-f1red"></i> Apostas Extra
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Bandeira Amarela?</label>
+              <select id="betYellow" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Bandeira Vermelha?</label>
+              <select id="betRed" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Número de DNFs (Desistências)</label>
+              <input type="number" id="betDnf" min="0" max="20" value="2" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+            </div>
+          </div>
+        </div>
 
-        // 3. Initialization
-        window.onload = function() {
-            loadStorage();
-            initGpSelect();
-            initDnfSelects();
-            renderPositionsForm('positionsContainer', 'betPos');
-            renderPositionsForm('officialPositionsContainer', 'officialPos');
-            updatePlayerDisplays();
-            loadCurrentBetIntoForm();
-            loadOfficialResultIntoForm();
-            updateAllDropdownVisibilities('betPos');
-            updateAllDropdownVisibilities('officialPos');
-        };
+        <button type="submit" class="w-full bg-f1red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar Aposta
+        </button>
+      </form>
+    </section>
 
-        // Load data from localStorage
-        function loadStorage() {
-            const saved = localStorage.getItem('f1_betting_app_data');
-            if (saved) {
-                try {
-                    appData = JSON.parse(saved);
-                } catch(e) {
-                    console.error("Erro ao carregar dados", e);
-                }
-            }
+    <!-- TAB 2: OFFICIAL RESULTS (Admin Only) -->
+    <section id="secResults" class="hidden space-block">
+      <div id="adminResultsOnly" class="space-y-6">
+        <form id="resultForm" onsubmit="saveOfficialResult(event)" class="space-y-6">
+          <div class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg">
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-square-check text-f1red"></i> Classificação Real da Corrida
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Insere o resultado oficial para calcular os pontos de ambos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="officialTop10Container">
+              <!-- Dropdowns 1-10 generated by JS -->
+            </div>
+          </div>
+
+          <div class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg">
+            <h3 class="text-lg font-bold text-white mb-4">Eventos Extra Reais</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Houve Bandeira Amarela?</label>
+                <select id="resYellow" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Houve Bandeira Vermelha?</label>
+                <select id="resRed" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Número Real de DNFs</label>
+                <input type="number" id="resDnf" min="0" max="20" value="0" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-f1red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-calculator"></i> Guardar Resultados e Calcular Pontos
+          </button>
+        </form>
+      </div>
+
+      <div id="p2ResultsLock" class="hidden bg-f1card border border-f1border rounded-xl p-8 text-center space-y-3">
+        <i class="fa-solid fa-lock text-4xl text-slate-500"></i>
+        <h3 class="text-lg font-bold text-white">Acesso Restrito</h3>
+        <p class="text-sm text-slate-400">Apenas o Administrador pode inserir os resultados oficiais da corrida.</p>
+      </div>
+    </section>
+
+    <!-- TAB 3: STANDINGS -->
+    <section id="secStandings" class="hidden space-block space-y-6">
+      <!-- Total Scores -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-f1card border border-f1border rounded-xl p-4 text-center">
+          <span id="stP1Name" class="text-xs uppercase font-bold text-slate-400 tracking-wider">Jogador 1</span>
+          <div id="stP1Score" class="text-3xl font-black text-f1red mt-1">0</div>
+          <span class="text-xs text-slate-500">Pontos Totais</span>
+        </div>
+        <div class="bg-f1card border border-f1border rounded-xl p-4 text-center">
+          <span id="stP2Name" class="text-xs uppercase font-bold text-slate-400 tracking-wider">Jogador 2</span>
+          <div id="stP2Score" class="text-3xl font-black text-white mt-1">0</div>
+          <span class="text-xs text-slate-500">Pontos Totais</span>
+        </div>
+      </div>
+
+      <!-- GP History Table -->
+      <div class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg overflow-x-auto">
+        <h3 class="text-lg font-bold text-white mb-4">Histórico do Campeonato</h3>
+        <table class="w-full text-sm text-left text-slate-300">
+          <thead class="text-xs text-slate-400 uppercase bg-f1dark/60 border-b border-f1border">
+            <tr>
+              <th class="py-3 px-4">GP</th>
+              <th class="py-3 px-4 text-center" id="thP1Name">Jogador 1</th>
+              <th class="py-3 px-4 text-center" id="thP2Name">Jogador 2</th>
+              <th class="py-3 px-4 text-center">Vencedor GP</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Admin Only Settings (Change Names & Password) -->
+      <div id="adminSettingsBox" class="bg-f1card border border-f1border rounded-xl p-4 md:p-6 shadow-lg">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-gear text-f1red"></i> Definições de Administrador
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Nome Jogador 1 (Admin)</label>
+            <input type="text" id="cfgP1Name" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Nome Jogador 2</label>
+            <input type="text" id="cfgP2Name" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Nova Palavra-Passe de Admin</label>
+          <input type="password" id="cfgPass" placeholder="Palavra-passe atual: admin" class="w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+        </div>
+        <button onclick="saveAdminSettings()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition-all">
+          Guardar Definições
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // F1 Drivers 2026
+    const drivers = [
+      "Max Verstappen (Red Bull)", "Liam Lawson (Red Bull)",
+      "Lewis Hamilton (Ferrari)", "Charles Leclerc (Ferrari)",
+      "Lando Norris (McLaren)", "Oscar Piastri (McLaren)",
+      "George Russell (Mercedes)", "Kimi Antonelli (Mercedes)",
+      "Fernando Alonso (Aston Martin)", "Lance Stroll (Aston Martin)",
+      "Pierre Gasly (Alpine)", "Jack Doohan (Alpine)",
+      "Alex Albon (Williams)", "Carlos Sainz (Williams)",
+      "Yuki Tsunoda (RB)", "Isack Hadjar (RB)",
+      "Nico Hulkenberg (Sauber)", "Gabriel Bortoleto (Sauber)",
+      "Esteban Ocon (Haas)", "Oliver Bearman (Haas)"
+    ];
+
+    // F1 Calendar 2026
+    const grandPrixList = [
+      "1. GP do Barém", "2. GP da Arábia Saudita", "3. GP da Austrália", "4. GP do Japão",
+      "5. GP da China", "6. GP de Miami", "7. GP de Emília-Romanha", "8. GP de Mónaco",
+      "9. GP do Canadá", "10. GP de Espanha", "11. GP da Áustria", "12. GP de Reino Unido",
+      "13. GP da Hungria", "14. GP da Bélgica", "15. GP dos Países Baixos", "16. GP de Itália",
+      "17. GP do Azerbaijão", "18. GP de Singapura", "19. GP dos EUA (Austin)", "20. GP do México",
+      "21. GP do Brasil", "22. GP de Las Vegas", "23. GP do Catar", "24. GP de Abu Dhabi"
+    ];
+
+    // Default App Data
+    let appData = {
+      p1Name: "Rita",
+      p2Name: "Namorado",
+      adminPass: "admin",
+      bets: {},    // { gpIndex: { p1: {top10: [], yellow, red, dnf}, p2: {...} } }
+      results: {}  // { gpIndex: { top10: [], yellow, red, dnf } }
+    };
+
+    let currentRole = 'p2'; // Default start as P2 for privacy safety
+    let activeBetUser = 'p2';
+
+    // Initialize
+    window.onload = function() {
+      loadData();
+      populateGPSelect();
+      renderFormFields();
+      setRole('p2'); // Default view
+      updateHeaderNames();
+    };
+
+    function loadData() {
+      const saved = localStorage.getItem('paddock_f1_data');
+      if (saved) {
+        appData = JSON.parse(saved);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem('paddock_f1_data', JSON.stringify(appData));
+    }
+
+    function updateHeaderNames() {
+      document.getElementById('subHeaderNames').innerText = `${appData.p1Name} vs ${appData.p2Name}`;
+      document.getElementById('labelP2').innerText = appData.p2Name;
+      document.getElementById('btnP1Name').innerText = appData.p1Name;
+      document.getElementById('btnP2Name').innerText = appData.p2Name;
+      document.getElementById('stP1Name').innerText = appData.p1Name;
+      document.getElementById('stP2Name').innerText = appData.p2Name;
+      document.getElementById('thP1Name').innerText = appData.p1Name;
+      document.getElementById('thP2Name').innerText = appData.p2Name;
+      document.getElementById('cfgP1Name').value = appData.p1Name;
+      document.getElementById('cfgP2Name').value = appData.p2Name;
+    }
+
+    function populateGPSelect() {
+      const select = document.getElementById('gpSelect');
+      select.innerHTML = '';
+      grandPrixList.forEach((gp, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = gp;
+        select.appendChild(opt);
+      });
+      // Set to GP 19 (Austin) by default if first time
+      select.value = "18"; // Index 18 = GP 19
+    }
+
+    function setRole(role) {
+      if (role === 'admin') {
+        const pass = prompt("Insere a palavra-passe de Admin:");
+        if (pass !== appData.adminPass) {
+          alert("Palavra-passe errada!");
+          return;
+        }
+        currentRole = 'admin';
+        activeBetUser = 'p1';
+        
+        document.getElementById('btnRoleAdmin').className = "px-3 py-1.5 text-xs font-bold rounded-lg border border-f1red bg-f1red text-white";
+        document.getElementById('btnRoleP2').className = "px-3 py-1.5 text-xs font-bold rounded-lg border border-f1border bg-f1dark text-slate-400";
+        document.getElementById('playerToggleBox').classList.remove('hidden');
+        document.getElementById('p2NoticeBox').classList.add('hidden');
+        document.getElementById('adminResultsOnly').classList.remove('hidden');
+        document.getElementById('p2ResultsLock').classList.add('hidden');
+        document.getElementById('adminSettingsBox').classList.remove('hidden');
+      } else {
+        currentRole = 'p2';
+        activeBetUser = 'p2';
+        
+        document.getElementById('btnRoleAdmin').className = "px-3 py-1.5 text-xs font-bold rounded-lg border border-f1border bg-f1dark text-slate-400";
+        document.getElementById('btnRoleP2').className = "px-3 py-1.5 text-xs font-bold rounded-lg border border-f1red bg-f1red text-white";
+        document.getElementById('playerToggleBox').classList.add('hidden');
+        document.getElementById('p2NoticeBox').classList.remove('hidden');
+        document.getElementById('adminResultsOnly').classList.add('hidden');
+        document.getElementById('p2ResultsLock').classList.remove('hidden');
+        document.getElementById('adminSettingsBox').classList.add('hidden');
+      }
+
+      selectBetPlayer(activeBetUser);
+    }
+
+    function selectBetPlayer(player) {
+      if (currentRole === 'p2' && player !== 'p2') return;
+
+      activeBetUser = player;
+      const pName = player === 'p1' ? appData.p1Name : appData.p2Name;
+      document.getElementById('currentBettingUserDisplay').innerText = pName;
+      document.getElementById('p2NoticeName').innerText = pName;
+
+      if (player === 'p1') {
+        document.getElementById('btnBetP1').className = "px-4 py-1.5 text-xs font-bold rounded-md bg-f1red text-white";
+        document.getElementById('btnBetP2').className = "px-4 py-1.5 text-xs font-bold rounded-md text-slate-400";
+      } else {
+        document.getElementById('btnBetP2').className = "px-4 py-1.5 text-xs font-bold rounded-md bg-f1red text-white";
+        document.getElementById('btnBetP1').className = "px-4 py-1.5 text-xs font-bold rounded-md text-slate-400";
+      }
+
+      loadBetValuesIntoForm();
+    }
+
+    function renderFormFields() {
+      const betContainer = document.getElementById('top10Container');
+      const resContainer = document.getElementById('officialTop10Container');
+      betContainer.innerHTML = '';
+      resContainer.innerHTML = '';
+
+      for (let i = 1; i <= 10; i++) {
+        // Bet Dropdown
+        betContainer.innerHTML += `
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">P${i}</label>
+            <select id="betP${i}" onchange="handleDropdownFilter('bet')" class="bet-select w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+              <option value="">-- Seleciona Piloto --</option>
+              ${drivers.map(d => `<option value="${d}">${d}</option>`).join('')}
+            </select>
+          </div>
+        `;
+
+        // Official Result Dropdown
+        resContainer.innerHTML += `
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">P${i} Real</label>
+            <select id="resP${i}" onchange="handleDropdownFilter('res')" class="res-select w-full bg-f1dark border border-f1border rounded-lg px-3 py-2 text-sm text-white focus:border-f1red outline-none">
+              <option value="">-- Seleciona Piloto --</option>
+              ${drivers.map(d => `<option value="${d}">${d}</option>`).join('')}
+            </select>
+          </div>
+        `;
+      }
+    }
+
+    function handleDropdownFilter(prefix) {
+      const selects = document.querySelectorAll(`.${prefix}-select`);
+      const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== "");
+
+      selects.forEach(select => {
+        const currentValue = select.value;
+        Array.from(select.options).forEach(option => {
+          if (option.value === "") return;
+          if (selectedValues.includes(option.value) && option.value !== currentValue) {
+            option.disabled = true;
+          } else {
+            option.disabled = false;
+          }
+        });
+      });
+    }
+
+    function changeGP() {
+      loadBetValuesIntoForm();
+      loadResultValuesIntoForm();
+    }
+
+    function loadBetValuesIntoForm() {
+      const gpIdx = document.getElementById('gpSelect').value;
+      const gpBets = appData.bets[gpIdx] && appData.bets[gpIdx][activeBetUser];
+
+      for (let i = 1; i <= 10; i++) {
+        const sel = document.getElementById(`betP${i}`);
+        sel.value = (gpBets && gpBets.top10[i - 1]) ? gpBets.top10[i - 1] : "";
+      }
+
+      document.getElementById('betYellow').value = (gpBets && gpBets.yellow) ? gpBets.yellow : "sim";
+      document.getElementById('betRed').value = (gpBets && gpBets.red) ? gpBets.red : "nao";
+      document.getElementById('betDnf').value = (gpBets && gpBets.dnf !== undefined) ? gpBets.dnf : 2;
+
+      handleDropdownFilter('bet');
+    }
+
+    function loadResultValuesIntoForm() {
+      const gpIdx = document.getElementById('gpSelect').value;
+      const gpRes = appData.results[gpIdx];
+
+      for (let i = 1; i <= 10; i++) {
+        const sel = document.getElementById(`resP${i}`);
+        sel.value = (gpRes && gpRes.top10[i - 1]) ? gpRes.top10[i - 1] : "";
+      }
+
+      document.getElementById('resYellow').value = (gpRes && gpRes.yellow) ? gpRes.yellow : "sim";
+      document.getElementById('resRed').value = (gpRes && gpRes.red) ? gpRes.red : "nao";
+      document.getElementById('resDnf').value = (gpRes && gpRes.dnf !== undefined) ? gpRes.dnf : 0;
+
+      handleDropdownFilter('res');
+    }
+
+    function saveBet(e) {
+      e.preventDefault();
+      const gpIdx = document.getElementById('gpSelect').value;
+      
+      const top10 = [];
+      for (let i = 1; i <= 10; i++) {
+        top10.push(document.getElementById(`betP${i}`).value);
+      }
+
+      if (top10.includes("")) {
+        alert("Por favor preenche todas as 10 posições!");
+        return;
+      }
+
+      if (!appData.bets[gpIdx]) appData.bets[gpIdx] = {};
+
+      appData.bets[gpIdx][activeBetUser] = {
+        top10: top10,
+        yellow: document.getElementById('betYellow').value,
+        red: document.getElementById('betRed').value,
+        dnf: parseInt(document.getElementById('betDnf').value)
+      };
+
+      saveData();
+      alert("Aposta guardada com sucesso!");
+    }
+
+    function saveOfficialResult(e) {
+      e.preventDefault();
+      const gpIdx = document.getElementById('gpSelect').value;
+
+      const top10 = [];
+      for (let i = 1; i <= 10; i++) {
+        top10.push(document.getElementById(`resP${i}`).value);
+      }
+
+      if (top10.includes("")) {
+        alert("Por favor preenche todas as 10 posições reais!");
+        return;
+      }
+
+      appData.results[gpIdx] = {
+        top10: top10,
+        yellow: document.getElementById('resYellow').value,
+        red: document.getElementById('resRed').value,
+        dnf: parseInt(document.getElementById('resDnf').value)
+      };
+
+      saveData();
+      alert("Resultado oficial guardado! Os pontos foram calculados.");
+      renderStandings();
+    }
+
+    function calculatePoints(gpIdx, player) {
+      const res = appData.results[gpIdx];
+      const bet = appData.bets[gpIdx] && appData.bets[gpIdx][player];
+
+      if (!res || !bet) return null;
+
+      let points = 0;
+
+      // Top 10 Exact Matches (1 point each)
+      for (let i = 0; i < 10; i++) {
+        if (bet.top10[i] === res.top10[i]) points++;
+      }
+
+      // Extra bets
+      if (bet.yellow === res.yellow) points++;
+      if (bet.red === res.red) points++;
+      if (parseInt(bet.dnf) === parseInt(res.dnf)) points++;
+
+      return points;
+    }
+
+    function renderStandings() {
+      let totalP1 = 0;
+      let totalP2 = 0;
+
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      grandPrixList.forEach((gpName, idx) => {
+        const p1Pts = calculatePoints(idx, 'p1');
+        const p2Pts = calculatePoints(idx, 'p2');
+
+        if (p1Pts !== null) totalP1 += p1Pts;
+        if (p2Pts !== null) totalP2 += p2Pts;
+
+        let winner = '-';
+        if (p1Pts !== null && p2Pts !== null) {
+          if (p1Pts > p2Pts) winner = `<span class="text-f1red font-bold">${appData.p1Name}</span>`;
+          else if (p2Pts > p1Pts) winner = `<span class="text-blue-400 font-bold">${appData.p2Name}</span>`;
+          else winner = `<span class="text-yellow-400 font-bold">Empate</span>`;
         }
 
-        // Save data to localStorage
-        function saveStorage() {
-            localStorage.setItem('f1_betting_app_data', JSON.stringify(appData));
-        }
-
-        // Populate GP Selector
-        function initGpSelect() {
-            const select = document.getElementById('gpSelect');
-            select.innerHTML = '';
-            GRAND_PRIX_CALENDAR.forEach((gp, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = `${idx + 1}. ${gp}`;
-                select.appendChild(opt);
-            });
-        }
-
-        // Populate DNF Options (0 to 20)
-        function initDnfSelects() {
-            const dnfBet = document.getElementById('extraDnf');
-            const dnfOfficial = document.getElementById('officialDnf');
-            dnfBet.innerHTML = '';
-            dnfOfficial.innerHTML = '';
-
-            for (let i = 0; i <= 20; i++) {
-                const opt1 = document.createElement('option');
-                opt1.value = i;
-                opt1.textContent = `${i} ${i === 1 ? 'desistência' : 'desistências'}`;
-                dnfBet.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = i;
-                opt2.textContent = `${i} ${i === 1 ? 'desistência' : 'desistências'}`;
-                dnfOfficial.appendChild(opt2);
-            }
-        }
-
-        // Generate Position Select Dropdowns
-        function renderPositionsForm(containerId, selectPrefix) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            for (let pos = 1; pos <= 20; pos++) {
-                const card = document.createElement('div');
-                card.className = "flex items-center gap-3 bg-f1dark/80 p-2.5 rounded-xl border border-slate-800/80";
-
-                let badgeColor = "bg-slate-700 text-slate-300";
-                if (pos === 1) badgeColor = "bg-amber-500 text-black font-black";
-                else if (pos === 2) badgeColor = "bg-slate-300 text-black font-black";
-                else if (pos === 3) badgeColor = "bg-amber-700 text-white font-black";
-
-                card.innerHTML = `
-                    <div class="w-8 h-8 rounded-lg ${badgeColor} flex items-center justify-center font-bold text-sm shrink-0">
-                        P${pos}
-                    </div>
-                    <select id="${selectPrefix}_${pos}" onchange="handleDropdownChange('${selectPrefix}', ${pos})" class="w-full bg-f1gray border border-slate-700 text-white rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-f1red font-medium">
-                        <option value="">-- Selecionar Piloto --</option>
-                        ${DRIVERS.map(d => `<option value="${d.id}">${d.name} (${d.team})</option>`).join('')}
-                    </select>
-                `;
-                container.appendChild(card);
-            }
-        }
-
-        // 4. Smart Dropdown Logic (Disable selected drivers in other position inputs)
-        function handleDropdownChange(prefix, changedPos) {
-            updateAllDropdownVisibilities(prefix);
-        }
-
-        function updateAllDropdownVisibilities(prefix) {
-            // Collect all selected values for this prefix
-            const selectedValues = {};
-            for (let pos = 1; pos <= 20; pos++) {
-                const select = document.getElementById(`${prefix}_${pos}`);
-                if (select && select.value) {
-                    selectedValues[pos] = select.value;
-                }
-            }
-
-            // Update options in each select
-            for (let pos = 1; pos <= 20; pos++) {
-                const select = document.getElementById(`${prefix}_${pos}`);
-                if (!select) continue;
-
-                const currentValue = select.value;
-
-                Array.from(select.options).forEach(opt => {
-                    if (!opt.value) return; // Keep blank placeholder always enabled
-
-                    // Check if driver is selected in ANY OTHER position
-                    let isTakenElsewhere = false;
-                    for (let otherPos = 1; otherPos <= 20; otherPos++) {
-                        if (otherPos !== pos && selectedValues[otherPos] === opt.value) {
-                            isTakenElsewhere = true;
-                            break;
-                        }
-                    }
-
-                    if (isTakenElsewhere) {
-                        opt.disabled = true;
-                        opt.classList.add('text-slate-600', 'bg-slate-900');
-                    } else {
-                        opt.disabled = false;
-                        opt.classList.remove('text-slate-600', 'bg-slate-900');
-                    }
-                });
-            }
-        }
-
-        // 5. Navigation & GP/Player Switching
-        function switchTab(tab) {
-            document.getElementById('section-bets').classList.add('hidden');
-            document.getElementById('section-results').classList.add('hidden');
-            document.getElementById('section-leaderboard').classList.add('hidden');
-
-            document.getElementById('tab-bets').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1gray text-slate-400 hover:text-white flex items-center gap-2";
-            document.getElementById('tab-results').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1gray text-slate-400 hover:text-white flex items-center gap-2";
-            document.getElementById('tab-leaderboard').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1gray text-slate-400 hover:text-white flex items-center gap-2";
-
-            if (tab === 'bets') {
-                document.getElementById('section-bets').classList.remove('hidden');
-                document.getElementById('tab-bets').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1red text-white flex items-center gap-2 shadow-lg";
-            } else if (tab === 'results') {
-                document.getElementById('section-results').classList.remove('hidden');
-                document.getElementById('tab-results').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-amber-600 text-white flex items-center gap-2 shadow-lg";
-                loadOfficialResultIntoForm();
-                renderGpScoreBreakdown();
-            } else if (tab === 'leaderboard') {
-                document.getElementById('section-leaderboard').classList.remove('hidden');
-                document.getElementById('tab-leaderboard').className = "px-5 py-2.5 rounded-t-lg font-bold text-sm transition-all duration-200 bg-f1red text-white flex items-center gap-2 shadow-lg";
-                renderLeaderboard();
-            }
-        }
-
-        function onGpChange() {
-            selectedGpIndex = parseInt(document.getElementById('gpSelect').value);
-            loadCurrentBetIntoForm();
-            loadOfficialResultIntoForm();
-            renderGpScoreBreakdown();
-        }
-
-        function selectPlayer(playerNum) {
-            currentActivePlayer = playerNum;
-            const p1Btn = document.getElementById('player1Btn');
-            const p2Btn = document.getElementById('player2Btn');
-
-            if (playerNum === 1) {
-                p1Btn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all bg-f1red text-white shadow-md";
-                p2Btn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white";
-            } else {
-                p2Btn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all bg-f1red text-white shadow-md";
-                p1Btn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white";
-            }
-
-            loadCurrentBetIntoForm();
-        }
-
-        // 6. Betting Operations
-        function saveCurrentBet() {
-            const positions = [];
-            for (let i = 1; i <= 20; i++) {
-                const val = document.getElementById(`betPos_${i}`).value;
-                positions.push(val);
-            }
-
-            const yellow = document.getElementById('extraYellow').value;
-            const red = document.getElementById('extraRed').value;
-            const dnf = document.getElementById('extraDnf').value;
-
-            const key = `${selectedGpIndex}_p${currentActivePlayer}`;
-            appData.bets[key] = { positions, yellow, red, dnf };
-            saveStorage();
-
-            const playerName = currentActivePlayer === 1 ? appData.players.p1 : appData.players.p2;
-            showToast(`Aposta de ${playerName} gravada com sucesso para o ${GRAND_PRIX_CALENDAR[selectedGpIndex]}!`);
-        }
-
-        function loadCurrentBetIntoForm() {
-            const key = `${selectedGpIndex}_p${currentActivePlayer}`;
-            const bet = appData.bets[key];
-
-            if (bet) {
-                for (let i = 1; i <= 20; i++) {
-                    document.getElementById(`betPos_${i}`).value = bet.positions[i - 1] || "";
-                }
-                document.getElementById('extraYellow').value = bet.yellow || "Sim";
-                document.getElementById('extraRed').value = bet.red || "Não";
-                document.getElementById('extraDnf').value = bet.dnf !== undefined ? bet.dnf : "0";
-            } else {
-                resetCurrentForm();
-            }
-
-            updateAllDropdownVisibilities('betPos');
-        }
-
-        function resetCurrentForm() {
-            for (let i = 1; i <= 20; i++) {
-                document.getElementById(`betPos_${i}`).value = "";
-            }
-            document.getElementById('extraYellow').value = "Sim";
-            document.getElementById('extraRed').value = "Não";
-            document.getElementById('extraDnf').value = "0";
-            updateAllDropdownVisibilities('betPos');
-        }
-
-        // 7. Official Results & Scoring Engine
-        function calculateAndSaveResults() {
-            const positions = [];
-            for (let i = 1; i <= 20; i++) {
-                const val = document.getElementById(`officialPos_${i}`).value;
-                positions.push(val);
-            }
-
-            const yellow = document.getElementById('officialYellow').value;
-            const red = document.getElementById('officialRed').value;
-            const dnf = document.getElementById('officialDnf').value;
-
-            appData.results[selectedGpIndex] = { positions, yellow, red, dnf };
-            saveStorage();
-
-            showToast(`Resultado oficial gravado e pontuações calculadas para o ${GRAND_PRIX_CALENDAR[selectedGpIndex]}!`);
-            renderGpScoreBreakdown();
-        }
-
-        function loadOfficialResultIntoForm() {
-            const result = appData.results[selectedGpIndex];
-            if (result) {
-                for (let i = 1; i <= 20; i++) {
-                    document.getElementById(`officialPos_${i}`).value = result.positions[i - 1] || "";
-                }
-                document.getElementById('officialYellow').value = result.yellow || "Sim";
-                document.getElementById('officialRed').value = result.red || "Não";
-                document.getElementById('officialDnf').value = result.dnf !== undefined ? result.dnf : "0";
-            } else {
-                for (let i = 1; i <= 20; i++) {
-                    document.getElementById(`officialPos_${i}`).value = "";
-                }
-                document.getElementById('officialYellow').value = "Sim";
-                document.getElementById('officialRed').value = "Não";
-                document.getElementById('officialDnf').value = "0";
-            }
-            updateAllDropdownVisibilities('officialPos');
-        }
-
-        function computeScoreForPlayer(gpIndex, playerNum) {
-            const result = appData.results[gpIndex];
-            const betKey = `${gpIndex}_p${playerNum}`;
-            const bet = appData.bets[betKey];
-
-            if (!result || !bet) return null;
-
-            let score = 0;
-            let exactMatches = 0;
-            let yellowMatch = false;
-            let redMatch = false;
-            let dnfMatch = false;
-
-            // 1 pt per correct position
-            for (let i = 0; i < 20; i++) {
-                if (bet.positions[i] && result.positions[i] && bet.positions[i] === result.positions[i]) {
-                    score += 1;
-                    exactMatches += 1;
-                }
-            }
-
-            // 1 pt for Yellow Flag match
-            if (bet.yellow === result.yellow) {
-                score += 1;
-                yellowMatch = true;
-            }
-
-            // 1 pt for Red Flag match
-            if (bet.red === result.red) {
-                score += 1;
-                redMatch = true;
-            }
-
-            // 1 pt for exact DNF match
-            if (String(bet.dnf) === String(result.dnf)) {
-                score += 1;
-                dnfMatch = true;
-            }
-
-            return {
-                total: score,
-                exactMatches,
-                yellowMatch,
-                redMatch,
-                dnfMatch
-            };
-        }
-
-        function renderGpScoreBreakdown() {
-            const container = document.getElementById('gpScoreDetails');
-            const wrapper = document.getElementById('gpScoreBreakdown');
-            const result = appData.results[selectedGpIndex];
-
-            if (!result) {
-                wrapper.classList.add('hidden');
-                return;
-            }
-
-            wrapper.classList.remove('hidden');
-            container.innerHTML = '';
-
-            [1, 2].forEach(pNum => {
-                const name = pNum === 1 ? appData.players.p1 : appData.players.p2;
-                const scoreData = computeScoreForPlayer(selectedGpIndex, pNum);
-
-                const card = document.createElement('div');
-                card.className = "bg-f1dark/90 p-5 rounded-xl border border-slate-800 space-y-3";
-
-                if (!scoreData) {
-                    card.innerHTML = `
-                        <h4 class="font-bold text-lg text-slate-300">${name}</h4>
-                        <p class="text-xs text-amber-500 italic"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sem apostas registadas para este GP.</p>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                            <h4 class="font-bold text-lg text-white">${name}</h4>
-                            <span class="text-2xl font-black text-f1red">${scoreData.total} pts</span>
-                        </div>
-                        <ul class="text-xs space-y-2 text-slate-300">
-                            <li class="flex justify-between items-center">
-                                <span>Posições Exatas (P1-P20):</span>
-                                <span class="font-bold text-amber-400">+${scoreData.exactMatches} pts</span>
-                            </li>
-                            <li class="flex justify-between items-center">
-                                <span>Bandeira Amarela:</span>
-                                <span class="${scoreData.yellowMatch ? 'text-emerald-400 font-bold' : 'text-slate-500'}">
-                                    ${scoreData.yellowMatch ? 'Acertou (+1 pt)' : 'Falhou (0 pts)'}
-                                </span>
-                            </li>
-                            <li class="flex justify-between items-center">
-                                <span>Bandeira Vermelha:</span>
-                                <span class="${scoreData.redMatch ? 'text-emerald-400 font-bold' : 'text-slate-500'}">
-                                    ${scoreData.redMatch ? 'Acertou (+1 pt)' : 'Falhou (0 pts)'}
-                                </span>
-                            </li>
-                            <li class="flex justify-between items-center">
-                                <span>Número de DNFs:</span>
-                                <span class="${scoreData.dnfMatch ? 'text-emerald-400 font-bold' : 'text-slate-500'}">
-                                    ${scoreData.dnfMatch ? 'Acertou (+1 pt)' : 'Falhou (0 pts)'}
-                                </span>
-                            </li>
-                        </ul>
-                    `;
-                }
-                container.appendChild(card);
-            });
-        }
-
-        // 8. Leaderboard & History Rendering
-        function renderLeaderboard() {
-            let p1Total = 0;
-            let p2Total = 0;
-            let p1Wins = 0;
-            let p2Wins = 0;
-
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
-
-            GRAND_PRIX_CALENDAR.forEach((gp, idx) => {
-                const s1 = computeScoreForPlayer(idx, 1);
-                const s2 = computeScoreForPlayer(idx, 2);
-
-                const score1 = s1 ? s1.total : 0;
-                const score2 = s2 ? s2.total : 0;
-
-                if (s1) p1Total += score1;
-                if (s2) p2Total += score2;
-
-                let winnerText = "-";
-                if (s1 || s2) {
-                    if (score1 > score2) {
-                        winnerText = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-trophy mr-1"></i> ${appData.players.p1}</span>`;
-                        p1Wins++;
-                    } else if (score2 > score1) {
-                        winnerText = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-trophy mr-1"></i> ${appData.players.p2}</span>`;
-                        p2Wins++;
-                    } else {
-                        winnerText = `<span class="text-amber-400 font-semibold">Empate</span>`;
-                    }
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/40 transition";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-slate-200">${idx + 1}. ${gp}</td>
-                    <td class="p-3 text-center font-bold ${s1 ? 'text-slate-100' : 'text-slate-600'}">${s1 ? s1.total + ' pts' : '-'}</td>
-                    <td class="p-3 text-center font-bold ${s2 ? 'text-slate-100' : 'text-slate-600'}">${s2 ? s2.total + ' pts' : '-'}</td>
-                    <td class="p-3 text-center">${winnerText}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Update Standings Cards
-            const cardsContainer = document.getElementById('leaderboardCards');
-            cardsContainer.innerHTML = `
-                <!-- Player 1 Card -->
-                <div class="bg-f1dark/90 p-6 rounded-xl border ${p1Total >= p2Total ? 'border-amber-500/80 shadow-amber-500/10' : 'border-slate-800'} shadow-2xl relative overflow-hidden">
-                    ${p1Total > p2Total ? '<div class="absolute -right-8 -top-8 bg-amber-500 text-black px-8 py-3 rotate-12 text-xs font-black uppercase tracking-widest shadow-md">Líder</div>' : ''}
-                    <div class="text-sm font-semibold uppercase text-slate-400 mb-1">Jogador 1</div>
-                    <div class="text-2xl font-black text-white mb-4">${appData.players.p1}</div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl font-black text-f1red">${p1Total}</span>
-                        <span class="text-sm font-bold text-slate-400">pontos no total</span>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-400 flex justify-between">
-                        <span>GPs Vencidos:</span>
-                        <span class="font-bold text-white">${p1Wins}</span>
-                    </div>
-                </div>
-
-                <!-- Player 2 Card -->
-                <div class="bg-f1dark/90 p-6 rounded-xl border ${p2Total >= p1Total ? 'border-amber-500/80 shadow-amber-500/10' : 'border-slate-800'} shadow-2xl relative overflow-hidden">
-                    ${p2Total > p1Total ? '<div class="absolute -right-8 -top-8 bg-amber-500 text-black px-8 py-3 rotate-12 text-xs font-black uppercase tracking-widest shadow-md">Líder</div>' : ''}
-                    <div class="text-sm font-semibold uppercase text-slate-400 mb-1">Jogador 2</div>
-                    <div class="text-2xl font-black text-white mb-4">${appData.players.p2}</div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl font-black text-f1red">${p2Total}</span>
-                        <span class="text-sm font-bold text-slate-400">pontos no total</span>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-400 flex justify-between">
-                        <span>GPs Vencidos:</span>
-                        <span class="font-bold text-white">${p2Wins}</span>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('thP1Name').textContent = appData.players.p1;
-            document.getElementById('thP2Name').textContent = appData.players.p2;
-        }
-
-        // 9. Customization & UI Utilities
-        function updatePlayerDisplays() {
-            document.getElementById('p1NameDisplay').textContent = appData.players.p1;
-            document.getElementById('p2NameDisplay').textContent = appData.players.p2;
-            document.getElementById('inputP1Name').value = appData.players.p1;
-            document.getElementById('inputP2Name').value = appData.players.p2;
-        }
-
-        function toggleNameModal() {
-            const modal = document.getElementById('nameModal');
-            modal.classList.toggle('hidden');
-        }
-
-        function savePlayerNames() {
-            const p1Val = document.getElementById('inputP1Name').value.trim();
-            const p2Val = document.getElementById('inputP2Name').value.trim();
-
-            if (p1Val) appData.players.p1 = p1Val;
-            if (p2Val) appData.players.p2 = p2Val;
-
-            saveStorage();
-            updatePlayerDisplays();
-            toggleNameModal();
-            showToast("Nomes dos jogadores atualizados!");
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').textContent = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 4000);
-        }
-
-        function hideToast() {
-            document.getElementById('toast').classList.add('hidden');
-        }
-    </script>
+        tbody.innerHTML += `
+          <tr class="border-b border-f1border/50">
+            <td class="py-3 px-4 font-medium">${gpName}</td>
+            <td class="py-3 px-4 text-center font-bold">${p1Pts !== null ? p1Pts + ' pts' : '-'}</td>
+            <td class="py-3 px-4 text-center font-bold">${p2Pts !== null ? p2Pts + ' pts' : '-'}</td>
+            <td class="py-3 px-4 text-center">${winner}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('stP1Score').innerText = totalP1;
+      document.getElementById('stP2Score').innerText = totalP2;
+    }
+
+    function switchTab(tab) {
+      document.getElementById('secBets').classList.add('hidden');
+      document.getElementById('secResults').classList.add('hidden');
+      document.getElementById('secStandings').classList.add('hidden');
+
+      document.getElementById('tabBets').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all text-slate-400 hover:text-white";
+      document.getElementById('tabResults').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all text-slate-400 hover:text-white";
+      document.getElementById('tabStandings').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all text-slate-400 hover:text-white";
+
+      if (tab === 'bets') {
+        document.getElementById('secBets').classList.remove('hidden');
+        document.getElementById('tabBets').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all bg-f1red text-white";
+      } else if (tab === 'results') {
+        document.getElementById('secResults').classList.remove('hidden');
+        document.getElementById('tabResults').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all bg-f1red text-white";
+        loadResultValuesIntoForm();
+      } else if (tab === 'standings') {
+        document.getElementById('secStandings').classList.remove('hidden');
+        document.getElementById('tabStandings').className = "flex-1 md:flex-initial px-4 py-2 text-sm font-semibold rounded-md transition-all bg-f1red text-white";
+        renderStandings();
+      }
+    }
+
+    function saveAdminSettings() {
+      const p1 = document.getElementById('cfgP1Name').value.trim();
+      const p2 = document.getElementById('cfgP2Name').value.trim();
+      const pass = document.getElementById('cfgPass').value.trim();
+
+      if (p1) appData.p1Name = p1;
+      if (p2) appData.p2Name = p2;
+      if (pass) appData.adminPass = pass;
+
+      saveData();
+      updateHeaderNames();
+      alert("Definições de Administrador guardadas com sucesso!");
+    }
+  </script>
 </body>
 </html>
